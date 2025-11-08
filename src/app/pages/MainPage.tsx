@@ -23,7 +23,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type StepId = "welcome" | "project" | "extra" | "participants" | "loading" | "board";
 
-const FLOW_STEPS: Array<{ id: StepId; title: string;}> = [
+const FLOW_STEPS: Array<{ id: StepId; title: string; }> = [
     {
         id: "welcome",
         title: "AI 기반 프로젝트 일정 생성기",
@@ -92,14 +92,14 @@ const BOARD_ITEMS_TEMPLATE = [
 ];
 
 // Component for participant row with local state
-function ParticipantRow({ 
+function ParticipantRow({
     participant,
     included,
     onIncludedChange,
     positionOptions,
     onAddPosition,
     onRemovePosition
-}: { 
+}: {
     participant: typeof PARTICIPANTS[0];
     included: boolean;
     onIncludedChange: (included: boolean) => void;
@@ -225,14 +225,14 @@ function ParticipantRow({
 }
 
 // Component for board item row with local state
-function BoardItemRow({ 
-    item, 
-    checked, 
+function BoardItemRow({
+    item,
+    checked,
     onCheckedChange,
     participantOptions,
     defaultParticipant
-}: { 
-    item: typeof BOARD_ITEMS_TEMPLATE[0]; 
+}: {
+    item: typeof BOARD_ITEMS_TEMPLATE[0];
     checked: boolean;
     onCheckedChange: (checked: boolean) => void;
     participantOptions: string[];
@@ -335,6 +335,10 @@ function MainPage() {
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [visibleMessages, setVisibleMessages] = useState<number[]>([]);
 
+    // Project form state
+    const [projectTopic, setProjectTopic] = useState("");
+    const [projectDeadline, setProjectDeadline] = useState("");
+
     const currentStep = FLOW_STEPS[currentStepIndex];
 
     // Get selected participants
@@ -370,9 +374,9 @@ function MainPage() {
         // Messages animation
         const messageInterval = LOADING_TIME / LOADING_MESSAGES.length;
         const messageTimeouts: number[] = [];
-        
+
         LOADING_MESSAGES.forEach((_, index) => {
-        const timeoutId = window.setTimeout(() => {
+            const timeoutId = window.setTimeout(() => {
                 setVisibleMessages((prev) => [...prev, index]);
             }, messageInterval * index);
             messageTimeouts.push(timeoutId);
@@ -432,6 +436,10 @@ function MainPage() {
 
     const boardCheckedCount = Object.values(boardCheckedItems).filter(Boolean).length;
 
+    // Validation for project form
+    const isProjectFormValid = projectTopic.trim() !== "" && projectDeadline !== "";
+    const isNextButtonDisabled = currentStep.id === "project" && !isProjectFormValid;
+
     const nextLabel = (() => {
         if (currentStep.id === "welcome") {
             return "시작하기";
@@ -449,20 +457,28 @@ function MainPage() {
     })();
 
     return (
-        <div className="min-h-screen bg-white text-primary">
-            <div className="flex min-h-screen items-center justify-center">
-                <div className="flex h-[640px] w-[1000px] flex-col rounded-2xl border-3 border-primary bg-white shadow-lg">
+        <div className="min-h-screen bg-white text-primary relative overflow-hidden">
+            <img 
+                src="/bg.png" 
+                alt="background" 
+                className="absolute inset-0 w-full h-full object-cover object-top-left"
+            />
+            <div className="absolute inset-0 bg-black opacity-20" />
+            <div className="flex min-h-screen items-center justify-center relative z-10">
+                <div className="flex h-[640px] w-[1000px] flex-col rounded-2xl border-2 border-primary bg-white shadow-lg">
                     <div className="flex h-full flex-col gap-2">
                         <header className="flex flex-col gap-2 mb-6">
-                            <p className="text-base font-medium text-primary border-b px-6 py-4">
+                            <p className="flex flex-row justify-between text-base font-medium text-primary border-b px-6 py-4">
                                 Riido AI
+                                <X className="h-6 w-6 text-primary cursor-pointer" />
                             </p>
+
                         </header>
 
                         {currentStep.id !== "welcome" &&
                             <div className="flex justify-center px-6">
-                                <Stepper 
-                                    activeStep={activeStepperIndex} 
+                                <Stepper
+                                    activeStep={activeStepperIndex}
                                     alternativeLabel
                                     sx={{
                                         maxWidth: '480px',
@@ -484,67 +500,67 @@ function MainPage() {
                                         },
                                     }}
                                 >
-                                {STEPPER_STEPS.map((step) => (
-                                    <Step 
-                                        key={step.id}
-                                        sx={{
-                                            '& .MuiStepLabel-root': {
-                                                padding: '0',
-                                            },
-                                            '& .MuiStepLabel-iconContainer': {
-                                                paddingRight: 0,
-                                            },
-                                            '& .MuiStepLabel-labelContainer': {
-                                                marginTop: '-8px',
-                                            },
-                                            '& .MuiStepLabel-label': {
-                                                fontSize: '12px',
-                                                fontWeight: 500,
-                                                color: '#545F7100',
-                                            },
-                                            '& .MuiStepLabel-label.Mui-active': {
-                                                color: '#5D4FF9',
-                                            },
-                                            '& .MuiStepLabel-label.Mui-completed': {
-                                                color: '#5D4FF9',
-                                            },
-                                            '& .MuiStepIcon-root': {
-                                                width: '28px',
-                                                height: '28px',
-                                                color: '#e5e7eb',
-                                            },
-                                            '& .MuiStepIcon-root.Mui-active': {
-                                                color: '#5D4FF9',
-                                            },
-                                            '& .MuiStepIcon-root.Mui-completed': {
-                                                color: '#5D4FF9',
-                                            },
-                                            '& .MuiStepIcon-text': {
-                                                fill: '#ffffff',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                            },
-                                        }}
-                                    >
-                                        <StepLabel>
-                                            {step.title}
-                                        </StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
+                                    {STEPPER_STEPS.map((step) => (
+                                        <Step
+                                            key={step.id}
+                                            sx={{
+                                                '& .MuiStepLabel-root': {
+                                                    padding: '0',
+                                                },
+                                                '& .MuiStepLabel-iconContainer': {
+                                                    paddingRight: 0,
+                                                },
+                                                '& .MuiStepLabel-labelContainer': {
+                                                    marginTop: '-8px',
+                                                },
+                                                '& .MuiStepLabel-label': {
+                                                    fontSize: '12px',
+                                                    fontWeight: 500,
+                                                    color: '#545F7100',
+                                                },
+                                                '& .MuiStepLabel-label.Mui-active': {
+                                                    color: '#5D4FF9',
+                                                },
+                                                '& .MuiStepLabel-label.Mui-completed': {
+                                                    color: '#5D4FF9',
+                                                },
+                                                '& .MuiStepIcon-root': {
+                                                    width: '28px',
+                                                    height: '28px',
+                                                    color: '#e5e7eb',
+                                                },
+                                                '& .MuiStepIcon-root.Mui-active': {
+                                                    color: '#5D4FF9',
+                                                },
+                                                '& .MuiStepIcon-root.Mui-completed': {
+                                                    color: '#5D4FF9',
+                                                },
+                                                '& .MuiStepIcon-text': {
+                                                    fill: '#ffffff',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                },
+                                            }}
+                                        >
+                                            <StepLabel>
+                                                {step.title}
+                                            </StepLabel>
+                                        </Step>
+                                    ))}
+                                </Stepper>
                             </div>
                         }
 
                         <div className="flex-1 overflow-auto py-4 px-6">
                             {currentStep.id === "welcome" ? (
                                 <div className="flex flex-col gap-4 items-center">
-                                    <p className="text-lg text-primary text-center">
-                                    Riido AI는 번거로운 프로젝트 일정 생성과 관리를 대신 해줘요.<br />
-                                    프로젝트 목적, 내용 등의 정보만 입력하면 예시와 같이 프로젝트 일정이 바로 생성돼요.
+                                    <p className="text-base text-primary text-center">
+                                        Riido AI는 번거로운 프로젝트 일정 생성과 관리를 대신 해줘요.<br />
+                                        프로젝트 목적, 내용 등의 정보만 입력하면 예시와 같이 프로젝트 일정이 바로 생성돼요.
                                     </p>
                                     <div className="flex flex-col justify-start">
                                         <p className="text-sm text-secondary">결과 예시</p>
-                                    <img src="/image.png" alt="example" className="w-[720px]" />
+                                        <img src="/image.png" alt="example" className="w-[720px]" />
                                     </div>
                                 </div>
                             ) : null}
@@ -580,7 +596,8 @@ function MainPage() {
                                                 프로젝트 주제 *
                                             </h2>
                                             <input
-                                                defaultValue=""
+                                                value={projectTopic}
+                                                onChange={(e) => setProjectTopic(e.target.value)}
                                                 placeholder="예: 회의실 및 공용 자원 예약 웹 기반 시스템 개발"
                                                 className="rounded-xl text-base border border-primary/20 bg-white px-4 py-3 text-primary outline-none transition focus:border-brand focus:shadow-[0_0_0_3px_rgba(93,79,249,0.15)]"
                                             />
@@ -592,7 +609,8 @@ function MainPage() {
                                             </h2>
                                             <input
                                                 type="date"
-                                                defaultValue=""
+                                                value={projectDeadline}
+                                                onChange={(e) => setProjectDeadline(e.target.value)}
                                                 className="rounded-xl border text-base border-primary/20 bg-white px-4 py-3 text-primary outline-none transition focus:border-brand focus:shadow-[0_0_0_3px_rgba(93,79,249,0.15)]"
                                             />
                                         </label>
@@ -667,8 +685,8 @@ function MainPage() {
                                             </TableHeader>
                                             <TableBody>
                                                 {PARTICIPANTS.map((participant) => (
-                                                    <ParticipantRow 
-                                                        key={participant.id} 
+                                                    <ParticipantRow
+                                                        key={participant.id}
                                                         participant={participant}
                                                         included={participantsIncluded[participant.id]}
                                                         onIncludedChange={(included) => {
@@ -734,7 +752,7 @@ function MainPage() {
                                             {visibleMessages.map((messageIndex) => {
                                                 const position = visibleMessages.length - 1 - visibleMessages.indexOf(messageIndex);
                                                 const opacity = position === 0 ? 1 : position === 1 ? 0.6 : position === 2 ? 0.4 : 0.2;
-                                                
+
                                                 return (
                                                     <div
                                                         key={messageIndex}
@@ -757,29 +775,29 @@ function MainPage() {
                             {currentStep.id === "board" ? (
                                 <div className="flex flex-col">
                                     <div className="mb-3">
-                                    <h2 className="text-base font-semibold text-primary">
+                                        <h2 className="text-base font-semibold text-primary">
                                             {LOADING_TIME / 1000}초만에 프로젝트 일정이 만들어졌어요!
-                                    </h2>
-                                </div>
+                                        </h2>
+                                    </div>
                                     <div className="relative max-h-[310px] w-full overflow-auto rounded-lg border border-sec bg-white">
-                                    <Table className="w-full scrollbar-hide">
-                                        <TableHeader>
-                                            <TableRow>
+                                        <Table className="w-full scrollbar-hide">
+                                            <TableHeader>
+                                                <TableRow>
                                                     <TableHead style={{ width: "6px" }}></TableHead>
-                                                <TableHead style={{ width: "10px" }}>
-                                                    <Checkbox aria-label="Select all" />
-                                                </TableHead>
+                                                    <TableHead style={{ width: "10px" }}>
+                                                        <Checkbox aria-label="Select all" />
+                                                    </TableHead>
                                                     <TableHead style={{ width: "300px" }}>이름</TableHead>
                                                     <TableHead style={{ width: "140px" }}>마감일</TableHead>
                                                     <TableHead style={{ width: "160px" }}>참여자</TableHead>
                                                     <TableHead style={{ width: "100px" }}>상태</TableHead>
                                                     <TableHead style={{ width: "80px" }}>현황</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                                 {BOARD_ITEMS_TEMPLATE.map((item) => (
-                                                    <BoardItemRow 
-                                                        key={item.id} 
+                                                    <BoardItemRow
+                                                        key={item.id}
                                                         item={item}
                                                         checked={!!boardCheckedItems[item.id]}
                                                         onCheckedChange={(checked) => {
@@ -791,11 +809,11 @@ function MainPage() {
                                                         participantOptions={selectedParticipants}
                                                         defaultParticipant={defaultParticipant}
                                                     />
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 </div>
-                            </div>
                             ) : null}
                         </div>
 
@@ -811,7 +829,7 @@ function MainPage() {
                                 </button>
                             ) : (
                                 <>
-                            <div>
+                                    <div>
                                         {currentStep.id === "board" ? (
                                             <button
                                                 type="button"
@@ -821,29 +839,33 @@ function MainPage() {
                                                 프로젝트 보드 다시 생성
                                             </button>
                                         ) : canGoBack ? (
-                                    <button
-                                        type="button"
-                                        onClick={handlePrev}
+                                            <button
+                                                type="button"
+                                                onClick={handlePrev}
                                                 className="rounded-lg w-[80px] bg-tertiary px-5 py-2.5 font-semibold text-primary text-base transition cursor-pointer"
-                                    >
+                                            >
                                                 뒤로
-                                    </button>
-                                ) : (
-                                    <div aria-hidden="true" className="h-10 w-[116px]" />
-                                )}
-                            </div>
-                            <div className="flex justify-end">
-                                {showNextButton &&
-                                    <button
-                                        type="button"
-                                        onClick={handleNext}
-                                                className="rounded-lg bg-brand px-5 py-2.5 font-semibold text-white text-base transition cursor-pointer"
+                                            </button>
+                                        ) : (
+                                            <div aria-hidden="true" className="h-10 w-[116px]" />
+                                        )}
+                                    </div>
+                                    <div className="flex justify-end">
+                                        {showNextButton &&
+                                            <button
+                                                type="button"
+                                                onClick={handleNext}
+                                                disabled={isNextButtonDisabled}
+                                                className={`rounded-lg px-5 py-2.5 font-semibold text-base transition ${isNextButtonDisabled
+                                                        ? "bg-tertiary text-primary cursor-not-allowed"
+                                                        : "bg-brand text-white cursor-pointer"
+                                                    }`}
                                                 style={{ minWidth: currentStep.id === "board" ? "180px" : "180px" }}
-                                    >
-                                        {nextLabel}
-                                    </button>
-                                }
-                            </div>
+                                            >
+                                                {nextLabel}
+                                            </button>
+                                        }
+                                    </div>
                                 </>
                             )}
                         </footer>
