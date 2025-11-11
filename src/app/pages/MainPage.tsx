@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
-import { ChevronDown, CheckCircle2, X, Plus } from "lucide-react";
+import { ChevronDown, CheckCircle2, X, Plus, HelpCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,6 +20,11 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 
 type StepId = "welcome" | "project" | "extra" | "participants" | "loading" | "board";
 
@@ -442,17 +447,17 @@ function MainPage() {
 
     const handleNext = () => {
         if (currentStep.id === "board") {
-            setCurrentStepIndex(0);
+            setIsModalOpen(false);
             return;
         }
 
         setCurrentStepIndex((prev) => Math.min(prev + 1, FLOW_STEPS.length - 1));
     };
 
-    const handleBackToProject = () => {
-        const projectIndex = FLOW_STEPS.findIndex((step) => step.id === "project");
-        setCurrentStepIndex(projectIndex === -1 ? 1 : projectIndex);
-    };
+    // const handleBackToProject = () => {
+    //     const projectIndex = FLOW_STEPS.findIndex((step) => step.id === "project");
+    //     setCurrentStepIndex(projectIndex === -1 ? 1 : projectIndex);
+    // };
 
     const handleBackToLoading = () => {
         const loadingIndex = FLOW_STEPS.findIndex((step) => step.id === "loading");
@@ -692,6 +697,22 @@ function MainPage() {
                                                     <div className="flex items-center gap-1">
                                                         <span className="text-base font-semibold text-primary">기타 요구사항</span>
                                                         <p className="text-sm text-primary opacity-80">(선택)</p>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <button className="p-1 text-primary/80 hover:text-primary transition-colors">
+                                                                    <HelpCircle className="h-4 w-4" />
+                                                                </button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-80 bg-white p-4 rounded-lg shadow-lg border border-primary/20 text-sm text-primary">
+                                                                <p className="font-semibold mb-2">기타 요구사항 작성 가이드:</p>
+                                                                <ul className="list-disc pl-5 space-y-1">
+                                                                    <li><span className="font-medium">개발 스택 외 기술적 요구사항:</span> 어떤 기능을 구현해야 하는지, 어떤 데이터를 사용해야 하는지 등</li>
+                                                                    <li><span className="font-medium">비기능적 요구사항:</span> 성능(응답 시간, 동시 사용자 수), 보안(인증 방식, 데이터 암호화), 확장성, 유지보수성 등</li>
+                                                                    <li><span className="font-medium">프로젝트 관리 관련:</span> 특정 산출물 형식, 보고 주기, 커뮤니케이션 채널 등</li>
+                                                                </ul>
+                                                                <p className="mt-2">상세하고 명확하게 작성할수록 AI가 더 정확한 일정을 생성해요</p>
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </div>
                                                     <textarea
                                                         defaultValue=""
